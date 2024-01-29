@@ -3,7 +3,11 @@ package com.devsuperior.bds02.services;
 import com.devsuperior.bds02.dto.CityDTO;
 import com.devsuperior.bds02.entities.City;
 import com.devsuperior.bds02.repositories.CityRepository;
+import com.devsuperior.bds02.services.exceptions.ResourceDataBaseException;
+import com.devsuperior.bds02.services.exceptions.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,8 +35,14 @@ public class CityService {
         return  new CityDTO(city);
     }
 
-    @Transactional
+
     public void delete(Long id){
-        repository.deleteById(id);
+        try {
+            repository.deleteById(id);
+        }catch (EmptyResultDataAccessException e) {
+            throw new ResourceNotFoundException("Cidade não encontrada: " + id);
+        }catch (DataIntegrityViolationException e) {
+            throw new ResourceDataBaseException("A cidade" + id + "não pode ser deletada");
+        }
     }
 }
